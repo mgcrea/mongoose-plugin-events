@@ -1,0 +1,56 @@
+{
+  "name": "mongoose-plugin-events",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "start": "npm run test:watch",
+    "test": "NODE_ENV=test mocha",
+    "test:watch": "npm run test -- --watch",
+    "test:coverage": "nyc --reporter=lcov npm test -- --reporter dot && nyc report",
+    "lint": "eslint src/ test/",
+    "compile": "rimraf lib/*; babel src/ -d lib/ -s",
+    "compile:watch": "npm run compile -- -w",
+    "prepublish": "npm run compile"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.carlipa.io/carlipa/online.git"
+  },
+  "author": {
+    "name": "Olivier Louvignes",
+    "email": "olivier@mg-crea.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.2",
+    "redis": "^2.6.3"
+  },
+  "optionalDependencies": {},
+  "devDependencies": {
+    "babel-cli": "file:../../node_modules/babel-cli",
+    "babel-eslint": "file:../../node_modules/babel-eslint",
+    "babel-plugin-istanbul": "file:../../node_modules/babel-plugin-istanbul",
+    "babel-plugin-relative-import": "file:../../node_modules/babel-plugin-relative-import",
+    "babel-plugin-transform-es2015-modules-commonjs": "file:../../node_modules/babel-plugin-transform-es2015-modules-commonjs",
+    "babel-plugin-transform-function-bind": "file:../../node_modules/babel-plugin-transform-function-bind",
+    "babel-plugin-transform-object-rest-spread": "file:../../node_modules/babel-plugin-transform-object-rest-spread",
+    "babel-register": "file:../../node_modules/babel-register",
+    "eslint": "file:../../node_modules/eslint",
+    "eslint-config-airbnb-base": "file:../../node_modules/eslint-config-airbnb-base",
+    "eslint-plugin-import": "file:../../node_modules/eslint-plugin-import",
+    "mocha": "file:../../node_modules/mocha",
+    "mongoose": "~4.7.0",
+    "nyc": "file:../../node_modules/nyc",
+    "rimraf": "file:../../node_modules/rimraf",
+    "supertest": "file:../../node_modules/supertest",
+    "supertest-as-promised": "file:../../node_modules/supertest-as-promised"
+  },
+  "nyc": {
+    "include": [
+      "src/*.js"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  }
+}

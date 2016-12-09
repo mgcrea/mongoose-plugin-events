@@ -21,42 +21,42 @@ describe('Plugin', () => {
     expect(encodeKeysPlugin).toBeA('function');
   });
   it('should properly save one document', () => {
-    const orig = {name: 'TestSave', content: {$: 'test$', '.foo': 'test.', '\\bar': 'test\\'}};
+    const orig = {name: 'save', content: {bar: 'baz'}};
     return Model.create(orig)
-      .then(doc => {
+      .then((doc) => {
         expect(doc.content).toEqual(orig.content);
         return Model.findOne({_id: doc.id});
       })
-      .then(doc => {
+      .then((doc) => {
         expect(doc.content).toEqual(orig.content);
       });
   });
   it('should properly save several documents', () => {
-    const origA = {name: 'TestSaveA', content: {$: 'test$', '.foo': 'test.', '\\bar': 'test\\'}};
-    const origB = {name: 'TestSaveB', content: {$: 'test$', '.foo': 'test.', '\\bar': 'test\\'}};
+    const origA = {name: 'saveA', content: {bar: 'baz'}};
+    const origB = {name: 'saveB', content: {bar: 'baz'}};
     return Model.create([origA, origB])
-      .then(docs => {
-        docs.forEach(doc => {
+      .then((docs) => {
+        docs.forEach((doc) => {
           expect(doc.content).toEqual(origA.content);
         });
         return Model.find({_id: {$in: map(docs, 'id')}});
       })
-      .then(docs => {
-        docs.forEach(doc => {
+      .then((docs) => {
+        docs.forEach((doc) => {
           expect(doc.content).toEqual(origA.content);
         });
       });
   });
   it('should properly update one document', () => {
-    const orig = {name: 'TestUpdate', content: {$: 'test$', '.foo': 'test.', '\\bar': 'test\\'}};
-    const udpate = {content: {$: 'test2$'}};
+    const orig = {name: 'update', content: {bar: 'baz'}};
+    const udpate = {content: {bar: 'baz2'}};
     return Model.create(orig)
-      .then(doc => {
+      .then((doc) => {
         expect(doc.content).toEqual(orig.content);
         return Model.update({_id: doc.id}, udpate).then(() => doc);
       })
       .then(doc => Model.findOne({_id: doc.id}))
-      .then(doc => {
+      .then((doc) => {
         expect(doc.content).toEqual(udpate.content);
       });
   });

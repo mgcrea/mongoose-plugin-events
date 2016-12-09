@@ -22,7 +22,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
             return;
           }
           const eventKey = `updated:${pathName}`;
-          d(`emit:${eventKey}`, {_id: object._id, [pathName]: get(object, pathName)});
+          // d(`emit:${eventKey}`, {_id: object._id, [pathName]: get(object, pathName)});
           model.emit(eventKey, {_id: object._id, [pathName]: get(object, pathName)});
         });
       }
@@ -44,7 +44,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
         if (query && isObjectId(query._id)) {
           model.emit(eventKey, {_id: query._id, [pathName]: get(update, pathName)});
         } else {
-          d('@TODO', query, update)
+          // d('@TODO', query, update)
         }
       });
     }

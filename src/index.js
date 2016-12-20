@@ -64,5 +64,6 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     const object = doc.toObject();
     // d('emit:removed', object);
     slowEmit('removed', object);
+    next();
   });
 }

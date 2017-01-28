@@ -40,7 +40,7 @@
     "eslint-config-airbnb-base": "file:../../node_modules/eslint-config-airbnb-base",
     "eslint-plugin-import": "file:../../node_modules/eslint-plugin-import",
     "mocha": "file:../../node_modules/mocha",
-    "mongoose": "~4.7.7",
+    "mongoose": "~4.7.9",
     "nyc": "file:../../node_modules/nyc",
     "rimraf": "file:../../node_modules/rimraf",
     "supertest": "file:../../node_modules/supertest",

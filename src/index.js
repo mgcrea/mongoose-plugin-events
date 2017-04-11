@@ -1,4 +1,7 @@
 import {get, isObject, isFunction} from 'lodash';
+import relayMongoEvents from './relay';
+
+export {relayMongoEvents};
 
 const isObjectId = maybeObjectId => isObject(maybeObjectId) && isFunction(maybeObjectId.getTimestamp);
 

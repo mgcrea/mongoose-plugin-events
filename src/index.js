@@ -37,7 +37,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   function preUpdate(next) {
     const query = this.getQuery();
     const update = this.getUpdate().$set;
-    const modifiedPaths = Object.keys(update);
+    const modifiedPaths = Object.keys(update || {});
     const model = this.model;
     const slowEmit = (...args) => setTimeout(() => model.emit(...args));
     if (modifiedPaths) {

@@ -2,17 +2,30 @@ import {pull} from 'lodash';
 
 const ucfirst = str => str.charAt(0).toUpperCase() + str.substr(1);
 
-export default function relayMongoEvents({log = console, mongoClient, redisClient, schemas = [], debug}) {
+const RELAYED_EVENTS = [
+  'created',
+  /updated:?.*/,
+  'deleted'
+];
+
+// @TODO
+// test publish on one model do not impact other model!
+
+export default function relayMongoEvents({log = console, logLevel = 'debug', mongoClient, redisClient, schemas = [], events = RELAYED_EVENTS}) {
   // static
   const eventListeners = {};
   const clearEventListener = (client, channel, callback) => {
-    log.debug('Removing pmessage listener for channel="%s"', channel);
+    log[logLevel]('Removing pmessage listener for channel="%s"', channel);
     pull(eventListeners[channel], callback);
     if (!eventListeners[channel].length) {
-      log.debug('Socket punsubscribe on channel="%s"', channel);
+      log[logLevel]('Socket punsubscribe on channel="%s"', channel);
       client.punsubscribe(channel);
     }
   };
+  const isRelayedEvent = eventName =>
+    events.some(relayedEvent => (
+      relayedEvent instanceof RegExp ? relayedEvent.test(eventName) : relayedEvent === eventName)
+    );
   // Once the client enters the subscribed state it is not supposed to issue any other commands,
   // except for additional SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE and PUNSUBSCRIBE commands.
   const subRedisClient = redisClient.duplicate();
@@ -34,24 +47,29 @@ export default function relayMongoEvents({log = console, mongoClient, redisClien
     const Model = mongoClient.model(ucfirst(schemaName));
     const parentEmit = Model.emit.bind(Model);
     Model.emit = (eventName, payload = {}) => {
-      log.debug('Emitting relayed eventName="%s"', eventName);
       const parentReturn = parentEmit(eventName, payload, eventName);
-      redisClient.publish(eventName, JSON.stringify(payload));
+      if (!isRelayedEvent(eventName)) {
+        return parentReturn;
+      }
+      log[logLevel]('Emitting relayed eventName="%s" for schema="%s"', eventName, schemaName);
+      const patternName = `${schemaName}.${eventName}`;
+      redisClient.publish(patternName, JSON.stringify(payload));
       return parentReturn;
     };
     Model.$on = (eventName, callback = () => {}) => {
-      log.debug('Subscribing to relayed eventName="%s"', eventName);
-      if (!eventListeners[eventName] || !eventListeners[eventName].length) {
-        subRedisClient.psubscribe(eventName);
-        eventListeners[eventName] = [];
+      log[logLevel]('Subscribing to relayed eventName="%s" for schema="%s"', eventName, schemaName);
+      const patternName = `${schemaName}.${eventName}`;
+      if (!eventListeners[patternName] || !eventListeners[patternName].length) {
+        subRedisClient.psubscribe(patternName);
+        eventListeners[patternName] = [];
       }
-      eventListeners[eventName].push(callback);
+      eventListeners[patternName].push(callback);
       return () => {
-        clearEventListener(subRedisClient, eventName, callback);
+        clearEventListener(subRedisClient, patternName, callback);
       };
     };
     Model.$once = function addOnceListener(eventName, callback = () => {}) {
-      log.debug('Subscribing once to relayed eventName="%s"', eventName);
+      log[logLevel]('Subscribing once to relayed eventName="%s" for schema="%s"', eventName, schemaName);
       const clearListener = this.$on(eventName, (...args) => {
         callback(...args);
         clearListener();

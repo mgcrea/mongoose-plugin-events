@@ -69,4 +69,12 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     slowEmit('removed', object);
     next();
   });
+
+  // Prepare potential relays
+  schema.statics.$on = function globalOn(eventName, callback = () => {}) {
+    return this.on(eventName, callback);
+  };
+  schema.statics.$once = function globalOn(eventName, callback = () => {}) {
+    return this.once(eventName, callback);
+  };
 }

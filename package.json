@@ -24,7 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "lodash": "^4.17.4",
-    "redis": "^2.6.5"
+    "redis": "^2.7.1"
   },
   "optionalDependencies": {},
   "devDependencies": {
@@ -40,7 +40,7 @@
     "eslint-config-airbnb-base": "file:../../node_modules/eslint-config-airbnb-base",
     "eslint-plugin-import": "file:../../node_modules/eslint-plugin-import",
     "mocha": "file:../../node_modules/mocha",
-    "mongoose": "~4.8.5",
+    "mongoose": "~4.9.8",
     "nyc": "file:../../node_modules/nyc",
     "rimraf": "file:../../node_modules/rimraf",
     "supertest": "file:../../node_modules/supertest"

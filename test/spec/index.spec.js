@@ -20,6 +20,7 @@ describe('Plugin', () => {
   it('constructor should export a function', () => {
     expect(encodeKeysPlugin).toBeA('function');
   });
+  // @TODO test $pushAll
   // it('should properly save one document', () => {
   //   const orig = {name: 'save', content: {bar: 'baz'}};
   //   return Model.create(orig)

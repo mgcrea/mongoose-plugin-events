@@ -34,24 +34,39 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     next();
   });
 
+  const updateOperators = [
+    '$inc', '$mul', '$rename', '$set', '$unset', '$min', '$max', '$addToSet', '$pop', '$pullAll', '$pull', '$pushAll', '$push'
+  ];
   function preUpdate(next) {
     const query = this.getQuery();
-    const update = this.getUpdate().$set;
-    const modifiedPaths = Object.keys(update || {});
+    const update = this.getUpdate();
     const model = this.model;
-    const slowEmit = (...args) => setTimeout(() => model.emit(...args));
-    if (modifiedPaths) {
-      // d(this.getUpdate());
-      slowEmit('updated', {...query, ...update});
-      modifiedPaths.forEach((pathName) => {
-        if (ignoredPaths.includes(pathName)) {
-          return;
-        }
-        const eventKey = `updated:${pathName}`;
-        if (query && isObjectId(query._id)) {
-          slowEmit(eventKey, {_id: query._id, [pathName]: get(update, pathName)});
-        } else {
-          // d('@TODO', query, update)
+    const wasUpdated = updateOperators.reduce((soFar, operator) =>
+      soFar || (update[operator] && (Object.keys(update[operator]).length > 0))
+    , false);
+    if (wasUpdated) {
+      const slowEmit = (...args) => setTimeout(() => model.emit(...args));
+      // Flatten $set
+      const flatUpdate = Object.keys(update).reduce((soFar, key) =>
+        Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]})
+      , query && query._id ? {_id: query._id} : {});
+      // Emit updated event
+      slowEmit('updated', {query, update: flatUpdate});
+      updateOperators.forEach((operator) => {
+        if (update[operator]) {
+          const modifiedPaths = Object.keys(update[operator]);
+          modifiedPaths.forEach((pathName) => {
+            if (ignoredPaths.includes(pathName)) {
+              return;
+            }
+            const eventKey = `updated:${pathName}`;
+            if (query && isObjectId(query._id)) {
+              const fieldUpdate = {_id: query._id, [pathName]: get(update[operator], pathName)};
+              slowEmit(eventKey, {query, operator, update: fieldUpdate});
+            } else {
+              // d('@TODO', query, update)
+            }
+          });
         }
       });
     }

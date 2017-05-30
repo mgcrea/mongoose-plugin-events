@@ -10,7 +10,10 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   schema.pre('save', function preSave(next) {
     const doc = this;
     const model = doc.model(doc.constructor.modelName);
-    const slowEmit = (...args) => setTimeout(() => model.emit(...args));
+    const slowEmit = (...args) => setTimeout(() => {
+      schema.emit(...args.concat(model));
+      model.emit(...args);
+    });
     if (doc.isNew) {
       const object = doc.toObject();
       // d('emit:created', object);
@@ -45,7 +48,10 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
       soFar || (update[operator] && (Object.keys(update[operator]).length > 0))
     , false);
     if (wasUpdated) {
-      const slowEmit = (...args) => setTimeout(() => model.emit(...args));
+      const slowEmit = (...args) => setTimeout(() => {
+        schema.emit(...args.concat(model));
+        model.emit(...args);
+      });
       // Flatten $set
       const flatUpdate = Object.keys(update).reduce((soFar, key) =>
         Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]})
@@ -78,7 +84,10 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   schema.pre('remove', function preRemove(next) {
     const doc = this;
     const model = doc.model(doc.constructor.modelName);
-    const slowEmit = (...args) => setTimeout(() => model.emit(...args));
+    const slowEmit = (...args) => setTimeout(() => {
+      schema.emit(...args.concat(model));
+      model.emit(...args);
+    });
     const object = doc.toObject();
     // d('emit:removed', object);
     slowEmit('removed', object);

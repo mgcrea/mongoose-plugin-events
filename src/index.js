@@ -94,11 +94,27 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     next();
   });
 
+  // Also emit on schema for cross plugin interactions
+  schema.methods.$emit = function emit(eventName, ...args) {
+    this.schema.emit(`doc:${eventName}`, ...args.concat(this));
+    return this.emit(eventName, ...args);
+  };
+  schema.statics.$emit = function emit(eventName, ...args) {
+    this.schema.emit(`model:${eventName}`, ...args.concat(this));
+    return this.emit(eventName, ...args);
+  };
+
   // Prepare potential relays
   schema.statics.$on = function globalOn(eventName, callback = () => {}) {
     return this.on(eventName, callback);
   };
-  schema.statics.$once = function globalOn(eventName, callback = () => {}) {
+  // schema.$on = function schemaOn(eventName, callback = () => {}) {
+  //   return this.on(eventName, callback);
+  // };
+  schema.statics.$once = function globalOnce(eventName, callback = () => {}) {
     return this.once(eventName, callback);
   };
+  // schema.$once = function schemaOnce(eventName, callback = () => {}) {
+  //   return this.once(eventName, callback);
+  // };
 }

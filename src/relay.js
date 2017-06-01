@@ -11,7 +11,13 @@ const RELAYED_EVENTS = [
 // @TODO
 // test publish on one model do not impact other model!
 
-export default function relayMongoEvents({log = console, logLevel = 'debug', mongoClient, redisClient, schemas = [], events = RELAYED_EVENTS}) {
+export default function relayMongoEvents({log = console,
+    logLevel = 'debug',
+    mongoClient,
+    redisClient,
+    schemas = [],
+    events = RELAYED_EVENTS
+  }) {
   // static
   const eventListeners = {};
   const clearEventListener = (client, channel, callback) => {

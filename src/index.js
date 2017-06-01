@@ -7,12 +7,22 @@ const isObjectId = maybeObjectId => isObject(maybeObjectId) && isFunction(maybeO
 
 export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'createdAt']}) {
   //
+  // Helper to emit on both model/document and schema for easier cross plugin interactions
+  schema.methods.$emit = function emit(eventName, ...args) {
+    this.schema.emit(`doc:${eventName}`, ...args.concat(this));
+    return this.emit(eventName, ...args);
+  };
+  schema.statics.$emit = function emit(eventName, ...args) {
+    this.schema.emit(`model:${eventName}`, ...args.concat(this));
+    return this.emit(eventName, ...args);
+  };
+
+  // Handle document creation
   schema.pre('save', function preSave(next) {
     const doc = this;
     const model = doc.model(doc.constructor.modelName);
     const slowEmit = (...args) => setTimeout(() => {
-      schema.emit(...args.concat(model));
-      model.emit(...args);
+      model.$emit(...args);
     });
     if (doc.isNew) {
       const object = doc.toObject();
@@ -49,8 +59,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     , false);
     if (wasUpdated) {
       const slowEmit = (...args) => setTimeout(() => {
-        schema.emit(...args.concat(model));
-        model.emit(...args);
+        model.$emit(...args);
       });
       // Flatten $set
       const flatUpdate = Object.keys(update).reduce((soFar, key) =>
@@ -85,8 +94,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     const doc = this;
     const model = doc.model(doc.constructor.modelName);
     const slowEmit = (...args) => setTimeout(() => {
-      schema.emit(...args.concat(model));
-      model.emit(...args);
+      model.$emit(...args);
     });
     const object = doc.toObject();
     // d('emit:removed', object);
@@ -94,27 +102,17 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     next();
   });
 
-  // Also emit on schema for cross plugin interactions
-  schema.methods.$emit = function emit(eventName, ...args) {
-    this.schema.emit(`doc:${eventName}`, ...args.concat(this));
-    return this.emit(eventName, ...args);
-  };
-  schema.statics.$emit = function emit(eventName, ...args) {
-    this.schema.emit(`model:${eventName}`, ...args.concat(this));
-    return this.emit(eventName, ...args);
-  };
-
   // Prepare potential relays
-  schema.statics.$on = function globalOn(eventName, callback = () => {}) {
+  schema.statics.$on = function modelOnListener(eventName, callback = () => {}) {
     return this.on(eventName, callback);
   };
-  // schema.$on = function schemaOn(eventName, callback = () => {}) {
-  //   return this.on(eventName, callback);
-  // };
-  schema.statics.$once = function globalOnce(eventName, callback = () => {}) {
+  schema.$on = function schemaOnListener(eventName, callback = () => {}) {
+    return this.on(eventName, callback);
+  };
+  schema.statics.$once = function modelOnceListener(eventName, callback = () => {}) {
     return this.once(eventName, callback);
   };
-  // schema.$once = function schemaOnce(eventName, callback = () => {}) {
-  //   return this.once(eventName, callback);
-  // };
+  schema.$once = function schemaOnceListener(eventName, callback = () => {}) {
+    return this.once(eventName, callback);
+  };
 }

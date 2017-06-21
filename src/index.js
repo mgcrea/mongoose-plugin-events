@@ -56,7 +56,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     const model = this.model;
     const wasUpdated = updateOperators.reduce((soFar, operator) =>
       soFar || (update[operator] && (Object.keys(update[operator]).length > 0))
-    , false);
+      , false);
     if (wasUpdated) {
       const slowEmit = (...args) => setTimeout(() => {
         model.$emit(...args);
@@ -64,7 +64,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
       // Flatten $set
       const flatUpdate = Object.keys(update).reduce((soFar, key) =>
         Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]})
-      , query && query._id ? {_id: query._id} : {});
+        , query && query._id ? {_id: query._id} : {});
       // Emit updated event
       slowEmit('updated', {query, update: flatUpdate});
       updateOperators.forEach((operator) => {

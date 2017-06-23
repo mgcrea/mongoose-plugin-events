@@ -19,28 +19,28 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
 
   // Handle document creation
   schema.pre('save', function preSave(next) {
-    const doc = this;
+    this.$wasNew = this.isNew;
+    next();
+  });
+  schema.post('save', function postSave(doc, next) {
     const model = doc.model(doc.constructor.modelName);
-    const slowEmit = (...args) => setTimeout(() => {
-      model.$emit(...args);
-    });
-    if (doc.isNew) {
+    if (this.$wasNew) {
       const object = doc.toObject();
       // d('emit:created', object);
-      slowEmit('created', object);
+      model.$emit('created', object);
     } else {
       const modifiedPaths = doc.modifiedPaths();
       if (modifiedPaths) {
         const object = doc.toObject();
         // d('emit:updated', object);
-        slowEmit('updated', object);
+        model.$emit('updated', object);
         modifiedPaths.forEach((pathName) => {
           if (ignoredPaths.includes(pathName)) {
             return;
           }
           const eventKey = `updated:${pathName}`;
           // d(`emit:${eventKey}`, {_id: object._id, [pathName]: get(object, pathName)});
-          slowEmit(eventKey, {_id: object._id, [pathName]: get(object, pathName)});
+          model.$emit(eventKey, {_id: object._id, [pathName]: get(object, pathName)});
         });
       }
     }
@@ -51,22 +51,24 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     '$inc', '$mul', '$rename', '$set', '$unset', '$min', '$max', '$addToSet', '$pop', '$pullAll', '$pull', '$pushAll', '$push'
   ];
   function preUpdate(next) {
-    const query = this.getQuery();
-    const update = this.getUpdate();
+    this.$wasQuery = this.getQuery();
+    this.$wasUpdate = this.getUpdate();
+    next();
+  }
+  function postUpdate(res, next) {
+    const query = this.$wasQuery;
+    const update = this.$wasUpdate;
     const model = this.model;
     const wasUpdated = updateOperators.reduce((soFar, operator) =>
       soFar || (update[operator] && (Object.keys(update[operator]).length > 0))
       , false);
     if (wasUpdated) {
-      const slowEmit = (...args) => setTimeout(() => {
-        model.$emit(...args);
-      });
       // Flatten $set
       const flatUpdate = Object.keys(update).reduce((soFar, key) =>
         Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]})
         , query && query._id ? {_id: query._id} : {});
       // Emit updated event
-      slowEmit('updated', {query, update: flatUpdate});
+      model.$emit('updated', {query, update: flatUpdate});
       updateOperators.forEach((operator) => {
         if (update[operator]) {
           const modifiedPaths = Object.keys(update[operator]);
@@ -77,7 +79,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
             const eventKey = `updated:${pathName}`;
             if (query && isObjectId(query._id)) {
               const fieldUpdate = {_id: query._id, [pathName]: get(update[operator], pathName)};
-              slowEmit(eventKey, {query, operator, update: fieldUpdate});
+              model.$emit(eventKey, {query, operator, update: fieldUpdate});
             } else {
               // d('@TODO', query, update)
             }
@@ -89,17 +91,14 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   }
   schema.pre('update', preUpdate);
   schema.pre('findOneAndUpdate', preUpdate);
+  schema.post('update', postUpdate);
+  schema.post('findOneAndUpdate', postUpdate);
 
-  schema.pre('remove', function preRemove(next) {
+  schema.post('remove', function postRemove() {
     const doc = this;
     const model = doc.model(doc.constructor.modelName);
-    const slowEmit = (...args) => setTimeout(() => {
-      model.$emit(...args);
-    });
     const object = doc.toObject();
-    // d('emit:removed', object);
-    slowEmit('removed', object);
-    next();
+    model.$emit('removed', object);
   });
 
   // Prepare potential relays

@@ -1,12 +1,11 @@
 
 import expect from 'expect';
 import mongoose from 'mongoose';
-import {map} from 'lodash';
 
 import testSchema from './../fixtures/schema';
 import pkg from './../../package.json';
 
-import encodeKeysPlugin from './../../src';
+import eventsPlugin from './../../src';
 
 describe('Plugin', () => {
   const mongoUri = process.env.MONGODB_URI || `mongodb://127.0.0.1:27017/test-${pkg.name}`;
@@ -18,53 +17,58 @@ describe('Plugin', () => {
     Model.remove({})
   ]));
   it('constructor should export a function', () => {
-    expect(encodeKeysPlugin).toBeA('function');
+    expect(eventsPlugin).toBeA('function');
   });
-  // @TODO test $pushAll
-  // it('should properly save one document', () => {
-  //   const orig = {name: 'save', content: {bar: 'baz'}};
-  //   return Model.create(orig)
-  //     .then((doc) => {
-  //       expect(doc.content).toEqual(orig.content);
-  //       return Model.findOne({_id: doc.id});
-  //     })
-  //     .then((doc) => {
-  //       expect(doc.content).toEqual(orig.content);
-  //     });
-  // });
-  // it('should properly save several documents', () => {
-  //   const origA = {name: 'saveA', content: {bar: 'baz'}};
-  //   const origB = {name: 'saveB', content: {bar: 'baz'}};
-  //   return Model.create([origA, origB])
-  //     .then((docs) => {
-  //       docs.forEach((doc) => {
-  //         expect(doc.content).toEqual(origA.content);
-  //       });
-  //       return Model.find({_id: {$in: map(docs, 'id')}});
-  //     })
-  //     .then((docs) => {
-  //       docs.forEach((doc) => {
-  //         expect(doc.content).toEqual(origA.content);
-  //       });
-  //     });
-  // });
-  // it('should properly update one document', () => {
-  //   const orig = {name: 'update', content: {bar: 'baz'}};
-  //   const udpate = {content: {bar: 'baz2'}};
-  //   return Model.create(orig)
-  //     .then((doc) => {
-  //       expect(doc.content).toEqual(orig.content);
-  //       return Model.update({_id: doc.id}, udpate).then(() => doc);
-  //     })
-  //     .then(doc => Model.findOne({_id: doc.id}))
-  //     .then((doc) => {
-  //       expect(doc.content).toEqual(udpate.content);
-  //     });
-  // });
-  // it('should properly support find without results', () => (
-  //   Model.findOne({name: 'foo'})
-  // ));
-  // it('should properly support update  results', () => (
-  //   Model.update({name: 'foo'}, {})
-  // ));
+  it('should properly save one document', () => {
+    const orig = {name: 'TestSave', content: {foo: 'bar'}};
+    // @TODO
+    // Model.schema.on('doc:created', (doc) => {
+    //   d('shcema created!!!');
+    // });
+    // db.model('Foo').on('created', (doc) => {
+    //   d('created!!!');
+    // });
+    return Model.create(orig)
+      .then((doc) => {
+        expect(doc.content).toEqual(orig.content);
+        return Model.findOne({_id: doc.id});
+      })
+      .then((doc) => {
+        expect(doc.content).toEqual(orig.content);
+      });
+  });
+  it('should properly support document update', () => {
+    // @TODO
+    // Model.schema.on('doc:updated', (doc) => {
+    //   d('shcema updated!!!');
+    // });
+    // db.model('Foo').on('updated', (doc) => {
+    //   d('updated!!!');
+    // });
+    const patch = {name: 'TestSave', content: {foo: 'baz'}};
+    return Model.update({name: 'TestSave'}, patch)
+      .then((doc) => {
+        expect(doc.ok).toEqual(1);
+        expect(doc.n).toEqual(1);
+        return Model.findOne({name: 'TestSave'});
+      })
+      .then((doc) => {
+        expect(doc.content).toEqual(patch.content);
+      });
+  });
+  // eslint-disable-next-line
+  it('should properly support document remove', () => {
+    // @TODO
+    // Model.schema.on('doc:removed', (doc) => {
+    //   d('schema removed!!!');
+    // });
+    // db.model('Foo').on('removed', (doc) => {
+    //   d('removed!!!');
+    // });
+    return Model.findOne({name: 'TestSave'})
+      .then(doc => doc.remove())
+      .then((doc) => {
+        expect(!!doc).toBeTruthy();
+      });
+  });
 });

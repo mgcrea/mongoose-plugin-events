@@ -1,4 +1,4 @@
-import {get, isObject, isFunction} from 'lodash';
+import {get, initial, isObject, isFunction, uniq} from 'lodash';
 import relayMongoEvents from './relay';
 
 export {relayMongoEvents};
@@ -72,14 +72,41 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
       updateOperators.forEach((operator) => {
         if (update[operator]) {
           const modifiedPaths = Object.keys(update[operator]);
+          const parentEvents = [];
+          const parentEventsUpdates = {};
           modifiedPaths.forEach((pathName) => {
             if (ignoredPaths.includes(pathName)) {
               return;
             }
+            // Emit exact path event
+            const eventKey = `updated:${pathName}`;
+            const emitUpdate = {[pathName]: get(update[operator], pathName)};
+            if (query && isObjectId(query._id)) {
+              emitUpdate._id = query._id;
+              model.$emit(eventKey, {query, operator, update: emitUpdate});
+            } else {
+              // d('@TODO', query, update)
+            }
+            // Compute parent path events
+            const parentPathNames = initial(pathName.split('.')).reduce((soFar, pathNamePart) => {
+              soFar.unshift(soFar[0] ? `${soFar}.${pathNamePart}` : pathNamePart);
+              parentEventsUpdates[soFar[0]] = parentEventsUpdates[soFar[0]]
+                ? {...parentEventsUpdates[soFar[0]], ...emitUpdate}
+                : emitUpdate;
+              return soFar;
+            }, []);
+            parentEvents.push(...parentPathNames);
+          });
+          // Emit parent path events
+          uniq(parentEvents).forEach((pathName) => {
+            if (ignoredPaths.includes(pathName)) {
+              return;
+            }
+            // Emit exact path event
             const eventKey = `updated:${pathName}`;
             if (query && isObjectId(query._id)) {
-              const fieldUpdate = {_id: query._id, [pathName]: get(update[operator], pathName)};
-              model.$emit(eventKey, {query, operator, update: fieldUpdate});
+              // const fieldUpdate = {_id: query._id, [pathName]: get(update[operator], pathName)};
+              model.$emit(eventKey, {query, operator, update: parentEventsUpdates[pathName]});
             } else {
               // d('@TODO', query, update)
             }

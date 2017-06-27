@@ -31,7 +31,7 @@ export default schema;
 
 - Listen on document events
 
-```
+```js
 const Device = mongoose.model('Device');
 Device.on('created', ({_id}) => {
   log.info('Detected device="%s" creation', _id);
@@ -40,7 +40,7 @@ Device.on('created', ({_id}) => {
 
 - Listen for field scoped events
 
-```
+```js
 const Device = mongoose.model('Device');
 Device.on('updated:lastSeen', ({query, operator, update}) => {
   const deviceId = update._id;
@@ -50,7 +50,7 @@ Device.on('updated:lastSeen', ({query, operator, update}) => {
 
 - Listen on schema events (eg. other plugins):
 
-```
+```js
 schema.on('model:updated', ({query, update}, model) => {
   const updateActivities = [];
   if (update.name) {

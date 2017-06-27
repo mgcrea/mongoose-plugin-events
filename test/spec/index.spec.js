@@ -13,21 +13,20 @@ describe('Plugin', () => {
   const db = mongoose.createConnection(mongoUri);
   const Model = db.model('Foo', testSchema);
 
-  before(() => Promise.all([
+  beforeAll(() => Promise.all([
     Model.remove({})
   ]));
   it('constructor should export a function', () => {
     expect(eventsPlugin).toBeA('function');
   });
   it('should properly save one document', () => {
+    // Bind events
+    const documentSpy = jest.fn();
+    Model.on('created', documentSpy);
+    const schemaSpy = jest.fn();
+    Model.schema.on('model:created', schemaSpy);
+    // Actually create document
     const orig = {name: 'TestSave', content: {foo: 'bar'}};
-    // @TODO
-    // Model.schema.on('doc:created', (doc) => {
-    //   d('shcema created!!!');
-    // });
-    // db.model('Foo').on('created', (doc) => {
-    //   d('created!!!');
-    // });
     return Model.create(orig)
       .then((doc) => {
         expect(doc.content).toEqual(orig.content);
@@ -35,18 +34,22 @@ describe('Plugin', () => {
       })
       .then((doc) => {
         expect(doc.content).toEqual(orig.content);
+        expect(documentSpy.mock.calls.length).toBe(1);
+        expect(documentSpy.mock.calls[0][0]).toEqual(doc.toObject());
+        expect(schemaSpy.mock.calls.length).toBe(1);
+        expect(schemaSpy.mock.calls[0][0]).toEqual(doc.toObject());
       });
   });
   it('should properly support document update', () => {
-    // @TODO
-    // Model.schema.on('doc:updated', (doc) => {
-    //   d('shcema updated!!!');
-    // });
-    // db.model('Foo').on('updated', (doc) => {
-    //   d('updated!!!');
-    // });
+    // Bind events
+    const documentSpy = jest.fn();
+    Model.on('updated', documentSpy);
+    const schemaSpy = jest.fn();
+    Model.schema.on('model:updated', schemaSpy);
+    // Actually patch document
+    const query = {name: 'TestSave'};
     const patch = {name: 'TestSave', content: {foo: 'baz'}};
-    return Model.update({name: 'TestSave'}, patch)
+    return Model.update(query, patch)
       .then((doc) => {
         expect(doc.ok).toEqual(1);
         expect(doc.n).toEqual(1);
@@ -54,21 +57,27 @@ describe('Plugin', () => {
       })
       .then((doc) => {
         expect(doc.content).toEqual(patch.content);
+        expect(documentSpy.mock.calls.length).toBe(1);
+        expect(documentSpy.mock.calls[0][0]).toEqual({query, update: patch});
+        expect(schemaSpy.mock.calls.length).toBe(1);
+        expect(schemaSpy.mock.calls[0][0]).toEqual({query, update: patch});
       });
   });
-  // eslint-disable-next-line
   it('should properly support document remove', () => {
-    // @TODO
-    // Model.schema.on('doc:removed', (doc) => {
-    //   d('schema removed!!!');
-    // });
-    // db.model('Foo').on('removed', (doc) => {
-    //   d('removed!!!');
-    // });
+    // Bind events
+    const documentSpy = jest.fn();
+    Model.on('removed', documentSpy);
+    const schemaSpy = jest.fn();
+    Model.schema.on('model:removed', schemaSpy);
+    // Actually remove document
     return Model.findOne({name: 'TestSave'})
       .then(doc => doc.remove())
       .then((doc) => {
         expect(!!doc).toBeTruthy();
+        expect(documentSpy.mock.calls.length).toBe(1);
+        expect(documentSpy.mock.calls[0][0]).toEqual(doc.toObject());
+        expect(schemaSpy.mock.calls.length).toBe(1);
+        expect(schemaSpy.mock.calls[0][0]).toEqual(doc.toObject());
       });
   });
 });

@@ -5,7 +5,7 @@
 [![build status](http://img.shields.io/travis/mgcrea/mongoose-plugin-events/master.svg?style=flat)](http://travis-ci.org/mgcrea/mongoose-plugin-events)
 [![dependencies status](https://img.shields.io/david/mgcrea/mongoose-plugin-events.svg?style=flat)](https://david-dm.org/mgcrea/mongoose-plugin-events)
 [![devDependencies status](https://img.shields.io/david/dev/mgcrea/mongoose-plugin-events.svg?style=flat)](https://david-dm.org/mgcrea/mongoose-plugin-events#info=devDependencies)
-[![Codacy Badge_Grade](https://api.codacy.com/project/badge/Grade/99844d4bed38450f9ec9e03650d19954)](https://www.codacy.com/app/olivier_5/mongoose-plugin-events?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mgcrea/mongoose-plugin-events&amp;utm_campaign=Badge_Grade) [![Codacy Badge_Coverage](https://api.codacy.com/project/badge/Coverage/99844d4bed38450f9ec9e03650d19954)](https://www.codacy.com/app/olivier_5/mongoose-plugin-events?utm_source=github.com&utm_medium=referral&utm_content=mgcrea/mongoose-plugin-events&utm_campaign=Badge_Coverage)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9766cf4c70c74694b7be0496d515c677)](https://www.codacy.com/app/olivier_5/mongoose-plugin-events?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mgcrea/mongoose-plugin-events&amp;utm_campaign=Badge_Grade)
 [![npm downloads](https://img.shields.io/npm/dm/mongoose-plugin-events.svg)](https://www.npmjs.com/package/mongoose-plugin-events)
 
 React on database changes with document and models events

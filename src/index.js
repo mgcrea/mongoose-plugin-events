@@ -59,15 +59,19 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   function postUpdate(res, next) {
     const query = this.$wasQuery;
     const update = this.$wasUpdate;
-    const model = this.model;
-    const wasUpdated = updateOperators.reduce((soFar, operator) =>
-      soFar || (update[operator] && (Object.keys(update[operator]).length > 0))
-      , false);
+    const {model} = this;
+    const wasUpdated = updateOperators.reduce(
+      (soFar, operator) =>
+        soFar || (update[operator] && (Object.keys(update[operator]).length > 0))
+      , false
+    );
     if (wasUpdated) {
       // Flatten $set
-      const flatUpdate = Object.keys(update).reduce((soFar, key) =>
-        Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]})
-        , query && query._id ? {_id: query._id} : {});
+      const flatUpdate = Object.keys(update).reduce(
+        (soFar, key) =>
+          Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]})
+        , query && query._id ? {_id: query._id} : {}
+      );
       // Emit updated event
       model.$emit('updated', {query, update: flatUpdate});
       updateOperators.forEach((operator) => {

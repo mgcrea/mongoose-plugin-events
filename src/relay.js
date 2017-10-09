@@ -11,7 +11,8 @@ const RELAYED_EVENTS = [
 // @TODO
 // test publish on one model do not impact other model!
 
-export default function relayMongoEvents({log = console,
+export default function relayMongoEvents({
+  log = console,
   logLevel = 'debug',
   mongoClient,
   redisClient,
@@ -30,8 +31,7 @@ export default function relayMongoEvents({log = console,
   };
   const isRelayedEvent = eventName =>
     events.some(relayedEvent => (
-      relayedEvent instanceof RegExp ? relayedEvent.test(eventName) : relayedEvent === eventName)
-    );
+      relayedEvent instanceof RegExp ? relayedEvent.test(eventName) : relayedEvent === eventName));
   // Once the client enters the subscribed state it is not supposed to issue any other commands,
   // except for additional SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE and PUNSUBSCRIBE commands.
   const subRedisClient = redisClient.duplicate();

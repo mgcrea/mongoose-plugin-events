@@ -1,3 +1,4 @@
+import EJSON from 'mongodb-extended-json';
 import {pull} from 'lodash';
 
 const ucfirst = str => str.charAt(0).toUpperCase() + str.substr(1);
@@ -41,9 +42,9 @@ export default function relayMongoEvents({
     if (eventListeners[pattern]) {
       let payload;
       try {
-        payload = JSON.parse(message);
+        payload = EJSON.parse(message);
       } catch (err) {
-        log.warn('Failed to parse JSON pmessage="%s" from channel="%s" Redis', message, channel);
+        log.warn('Failed to parse EJSON pmessage="%s" from channel="%s" Redis', message, channel);
       }
       eventListeners[pattern].forEach(callback => callback.call({eventName: channel}, payload));
     }
@@ -59,7 +60,7 @@ export default function relayMongoEvents({
       }
       log[logLevel]('Emitting relayed eventName="%s" for schema="%s"', eventName, schemaName);
       const patternName = `${schemaName}.${eventName}`;
-      redisClient.publish(patternName, JSON.stringify(payload));
+      redisClient.publish(patternName, EJSON.stringify(payload));
       return parentReturn;
     };
     Model.$on = (eventName, callback = () => {}) => {

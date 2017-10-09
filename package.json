@@ -20,7 +20,8 @@
   "repository": "github:mgcrea/mongoose-plugin-events",
   "license": "MIT",
   "dependencies": {
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "mongodb-extended-json": "^1.10.0"
   },
   "optionalDependencies": {},
   "devDependencies": {

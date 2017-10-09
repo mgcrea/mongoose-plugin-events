@@ -20,6 +20,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   // Handle document creation
   schema.pre('save', function preSave(next) {
     this.$wasNew = this.isNew;
+    this.$wasModifiedPaths = this.modifiedPaths();
     next();
   });
   schema.post('save', function postSave(doc, next) {
@@ -29,7 +30,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
       // d('emit:created', object);
       model.$emit('created', object);
     } else {
-      const modifiedPaths = doc.modifiedPaths();
+      const modifiedPaths = this.$wasModifiedPaths;
       if (modifiedPaths) {
         const object = doc.toObject();
         // d('emit:updated', object);
@@ -39,8 +40,8 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
             return;
           }
           const eventKey = `updated:${pathName}`;
-          // d(`emit:${eventKey}`, {_id: object._id, [pathName]: get(object, pathName)});
-          model.$emit(eventKey, {_id: object._id, [pathName]: get(object, pathName)});
+          const emitUpdate = {_id: object._id, [pathName]: get(object, pathName)};
+          model.$emit(eventKey, {query: {_id: object._id}, operator: '$set', update: emitUpdate});
         });
       }
     }

@@ -67,7 +67,7 @@ export default function relayMongoEvents({
       try {
         message = (useExtendedJson ? EJSON : JSON).stringify(payload);
       } catch (err) {
-        log.warn('Failed to stringify JSON payload from channel="%s" Redis', channel);
+        log.warn('Failed to stringify JSON payload for eventName="%s" for schema="%s"', eventName, schemaName);
       }
       if (message) {
         redisClient.publish(patternName, message);

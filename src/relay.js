@@ -18,7 +18,8 @@ export default function relayMongoEvents({
   mongoClient,
   redisClient,
   schemas = [],
-  events = RELAYED_EVENTS
+  events = RELAYED_EVENTS,
+  useExtendedJson = false
 }) {
   // static
   const eventListeners = {};
@@ -42,11 +43,13 @@ export default function relayMongoEvents({
     if (eventListeners[pattern]) {
       let payload;
       try {
-        payload = EJSON.parse(message);
+        payload = (useExtendedJson ? EJSON : JSON).parse(message);
       } catch (err) {
-        log.warn('Failed to parse EJSON pmessage="%s" from channel="%s" Redis', message, channel);
+        log.warn('Failed to parse JSON pmessage="%s" from channel="%s" Redis', message, channel);
       }
-      eventListeners[pattern].forEach(callback => callback.call({eventName: channel}, payload));
+      if (payload) {
+        eventListeners[pattern].forEach(callback => callback.call({eventName: channel}, payload));
+      }
     }
   });
 
@@ -60,7 +63,15 @@ export default function relayMongoEvents({
       }
       log[logLevel]('Emitting relayed eventName="%s" for schema="%s"', eventName, schemaName);
       const patternName = `${schemaName}.${eventName}`;
-      redisClient.publish(patternName, EJSON.stringify(payload));
+      let message;
+      try {
+        message = (useExtendedJson ? EJSON : JSON).stringify(payload);
+      } catch (err) {
+        log.warn('Failed to stringify JSON payload from channel="%s" Redis', channel);
+      }
+      if (message) {
+        redisClient.publish(patternName, message);
+      }
       return parentReturn;
     };
     Model.$on = (eventName, callback = () => {}) => {

@@ -1,6 +1,6 @@
 {
   "name": "mongoose-plugin-events",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "prepublish": "npm run compile"
   },
   "engines": {
-    "node": "^6"
+    "node": ">=6"
   },
   "author": "Olivier Louvignes <olivier@mgcrea.io>",
   "repository": "github:mgcrea/mongoose-plugin-events",

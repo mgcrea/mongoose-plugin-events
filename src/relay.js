@@ -6,7 +6,7 @@ const ucfirst = str => str.charAt(0).toUpperCase() + str.substr(1);
 const RELAYED_EVENTS = [
   'created',
   /updated:?.*/,
-  'deleted'
+  'removed'
 ];
 
 // @TODO

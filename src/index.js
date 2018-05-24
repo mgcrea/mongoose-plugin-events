@@ -1,4 +1,4 @@
-import {get, initial, isObject, isFunction, uniq} from 'lodash';
+import {get, initial, isObject, without, omit, isFunction, uniq} from 'lodash';
 import relayMongoEvents from './relay';
 
 export {relayMongoEvents};
@@ -20,7 +20,7 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   // Handle document creation
   schema.pre('save', function preSave(next) {
     this.$wasNew = this.isNew;
-    this.$wasModifiedPaths = this.modifiedPaths();
+    this.$wasModifiedPaths = this.modifiedPaths() || [];
     next();
   });
   schema.post('save', function postSave(doc, next) {
@@ -30,15 +30,12 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
       // d('emit:created', object);
       model.$emit('created', object);
     } else {
-      const modifiedPaths = this.$wasModifiedPaths;
-      if (modifiedPaths) {
-        const object = doc.toObject();
+      const modifiedPaths = without(this.$wasModifiedPaths, ...ignoredPaths);
+      if (modifiedPaths.length) {
+        const object = omit(doc.toObject(), ignoredPaths);
         // d('emit:updated', object);
         model.$emit('updated', object);
         modifiedPaths.forEach((pathName) => {
-          if (ignoredPaths.includes(pathName)) {
-            return;
-          }
           const eventKey = `updated:${pathName}`;
           const emitUpdate = {_id: object._id, [pathName]: get(object, pathName)};
           model.$emit(eventKey, {query: {_id: object._id}, operator: '$set', update: emitUpdate});
@@ -82,17 +79,17 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
         (soFar, key) => Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]}),
         query && query._id ? {_id: query._id} : {}
       );
-      // Emit updated event
-      model.$emit('updated', {query, update: flatUpdate});
+      const flatModifiedPaths = without(Object.keys(flatUpdate), ...ignoredPaths, '_id');
+      if (flatModifiedPaths.length) {
+        // Emit updated event
+        model.$emit('updated', {query, update: flatUpdate});
+      }
       updateOperators.forEach((operator) => {
         if (update[operator]) {
-          const modifiedPaths = Object.keys(update[operator]);
+          const modifiedPaths = without(Object.keys(update[operator]), ...ignoredPaths);
           const parentEvents = [];
           const parentEventsUpdates = {};
           modifiedPaths.forEach((pathName) => {
-            if (ignoredPaths.includes(pathName)) {
-              return;
-            }
             // Emit exact path event
             const eventKey = `updated:${pathName}`;
             const emitUpdate = {[pathName]: get(update[operator], pathName)};

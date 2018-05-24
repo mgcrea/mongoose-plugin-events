@@ -14,7 +14,7 @@
     "prepublish": "npm run compile"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=4"
   },
   "author": "Olivier Louvignes <olivier@mgcrea.io>",
   "repository": "github:mgcrea/mongoose-plugin-events",

@@ -49,7 +49,19 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   });
 
   const updateOperators = [
-    '$inc', '$mul', '$rename', '$set', '$unset', '$min', '$max', '$addToSet', '$pop', '$pullAll', '$pull', '$pushAll', '$push'
+    '$inc',
+    '$mul',
+    '$rename',
+    '$set',
+    '$unset',
+    '$min',
+    '$max',
+    '$addToSet',
+    '$pop',
+    '$pullAll',
+    '$pull',
+    '$pushAll',
+    '$push'
   ];
   function preUpdate(next) {
     this.$wasQuery = this.getQuery();
@@ -61,16 +73,14 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     const update = this.$wasUpdate;
     const {model} = this;
     const wasUpdated = updateOperators.reduce(
-      (soFar, operator) =>
-        soFar || (update[operator] && (Object.keys(update[operator]).length > 0))
-      , false
+      (soFar, operator) => soFar || (update[operator] && Object.keys(update[operator]).length > 0),
+      false
     );
     if (wasUpdated) {
       // Flatten $set
       const flatUpdate = Object.keys(update).reduce(
-        (soFar, key) =>
-          Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]})
-        , query && query._id ? {_id: query._id} : {}
+        (soFar, key) => Object.assign(soFar, key === '$set' ? update[key] : {[key]: update[key]}),
+        query && query._id ? {_id: query._id} : {}
       );
       // Emit updated event
       model.$emit('updated', {query, update: flatUpdate});

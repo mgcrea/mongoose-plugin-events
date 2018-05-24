@@ -3,11 +3,7 @@ import {pull} from 'lodash';
 
 const ucfirst = str => str.charAt(0).toUpperCase() + str.substr(1);
 
-const RELAYED_EVENTS = [
-  'created',
-  /updated:?.*/,
-  'deleted'
-];
+const RELAYED_EVENTS = ['created', /updated:?.*/, 'deleted'];
 
 // @TODO
 // test publish on one model do not impact other model!
@@ -32,8 +28,7 @@ export default function relayMongoEvents({
     }
   };
   const isRelayedEvent = eventName =>
-    events.some(relayedEvent => (
-      relayedEvent instanceof RegExp ? relayedEvent.test(eventName) : relayedEvent === eventName));
+    events.some(relayedEvent => (relayedEvent instanceof RegExp ? relayedEvent.test(eventName) : relayedEvent === eventName));
   // Once the client enters the subscribed state it is not supposed to issue any other commands,
   // except for additional SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE and PUNSUBSCRIBE commands.
   const subRedisClient = redisClient.duplicate();

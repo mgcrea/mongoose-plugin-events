@@ -5,4 +5,5 @@ lib/
 yarn.lock
 .tmp/
 .nyc_output/
+.history/
 coverage/

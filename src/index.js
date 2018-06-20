@@ -1,4 +1,4 @@
-import {get, initial, isObject, without, omit, isFunction, uniq} from 'lodash';
+import {get, initial, isObject, without, pick, isFunction, uniq} from 'lodash';
 import relayMongoEvents from './relay';
 
 export {relayMongoEvents};
@@ -32,13 +32,16 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
     } else {
       const modifiedPaths = without(this.$wasModifiedPaths, ...ignoredPaths);
       if (modifiedPaths.length) {
-        const object = omit(doc.toObject(), ignoredPaths);
+        // Build query/update pair exactly like an update
+        const query = {_id: doc._id};
+        const update = pick(doc.toObject(), modifiedPaths);
+        update._id = query._id;
         // d('emit:updated', object);
-        model.$emit('updated', object);
+        model.$emit('updated', {query, update});
         modifiedPaths.forEach((pathName) => {
           const eventKey = `updated:${pathName}`;
-          const emitUpdate = {_id: object._id, [pathName]: get(object, pathName)};
-          model.$emit(eventKey, {query: {_id: object._id}, operator: '$set', update: emitUpdate});
+          const emitUpdate = {...query, [pathName]: get(update, pathName)};
+          model.$emit(eventKey, {query, operator: '$set', update: emitUpdate});
         });
       }
     }

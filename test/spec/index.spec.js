@@ -21,7 +21,7 @@ describe('Plugin', () => {
   it('constructor should export a function', () => {
     expect(typeof eventsPlugin).toBe('function');
   });
-  it('should properly save one document', () => {
+  it.only('should properly save one document', () => {
     // Bind events
     const documentSpy = jest.fn();
     Model.on('created', documentSpy);
@@ -33,11 +33,11 @@ describe('Plugin', () => {
     const orig = {name: 'TestSave', content: {foo: 'bar'}};
     const patch = {content: {foo: 'bar2'}};
     return Model.create(orig)
-      .then((doc) => {
+      .then(doc => {
         expect(doc.content).toEqual(orig.content);
         return Model.findOne({_id: doc.id});
       })
-      .then((doc) => {
+      .then(doc => {
         expect(doc.content).toEqual(orig.content);
         expect(documentSpy.mock.calls.length).toBe(1);
         expect(documentSpy.mock.calls[0][0]).toEqual(doc.toObject());
@@ -46,7 +46,7 @@ describe('Plugin', () => {
         doc.set('content', patch.content);
         return doc.save();
       })
-      .then((doc) => {
+      .then(doc => {
         expect(fieldSpy.mock.calls.length).toBe(1);
         const query = {_id: doc._id};
         expect(fieldSpy.mock.calls[0][0]).toEqual({
@@ -69,15 +69,15 @@ describe('Plugin', () => {
     const patch = {name: 'TestSave2', content: {foo: 'baz'}};
     return Model.findOne()
       .exec()
-      .then((doc) => {
+      .then(doc => {
         // update-like
         query._id = doc._id;
-        Object.keys(patch).forEach((key) => {
+        Object.keys(patch).forEach(key => {
           doc[key] = patch[key];
         });
         return doc.save();
       })
-      .then((doc) => {
+      .then(doc => {
         expect(doc.content).toEqual(patch.content);
         const update = {_id: query._id, ...patch};
         expect(documentSpy.mock.calls.length).toBe(1);
@@ -105,16 +105,53 @@ describe('Plugin', () => {
     const patch = {name: 'TestSave3', content: {foo: 'baz'}};
     return Model.findOne()
       .exec()
-      .then((doc) => {
+      .then(doc => {
         query._id = doc._id;
         return Model.update(query, {$set: patch});
       })
-      .then((doc) => {
+      .then(doc => {
         expect(doc.ok).toEqual(1);
         expect(doc.n).toEqual(1);
         return Model.findOne({name: 'TestSave3'});
       })
-      .then((doc) => {
+      .then(doc => {
+        expect(doc.content).toEqual(patch.content);
+        const update = {_id: query._id, ...patch};
+        expect(documentSpy.mock.calls.length).toBe(1);
+        expect(documentSpy.mock.calls[0][0]).toEqual({query, update});
+        expect(schemaSpy.mock.calls.length).toBe(1);
+        expect(schemaSpy.mock.calls[0][0]).toEqual({query, update});
+        expect(fieldSpy.mock.calls.length).toBe(1);
+        expect(fieldSpy.mock.calls[0][0]).toEqual({
+          operator: '$set',
+          query,
+          update: {_id: query._id, name: update.name}
+        });
+      });
+  });
+  it('should properly support document raw update', () => {
+    // Bind events
+    const documentSpy = jest.fn();
+    Model.on('updated', documentSpy);
+    const schemaSpy = jest.fn();
+    Model.schema.on('model:updated', schemaSpy);
+    const fieldSpy = jest.fn();
+    Model.on('updated:name', fieldSpy);
+    // Actually patch document
+    const query = {};
+    const patch = {name: 'TestSave4', content: {foo: 'baz'}};
+    return Model.findOne()
+      .exec()
+      .then(doc => {
+        query._id = doc._id;
+        return Model.update(query, patch);
+      })
+      .then(doc => {
+        expect(doc.ok).toEqual(1);
+        expect(doc.n).toEqual(1);
+        return Model.findOne({name: 'TestSave4'});
+      })
+      .then(doc => {
         expect(doc.content).toEqual(patch.content);
         const update = {_id: query._id, ...patch};
         expect(documentSpy.mock.calls.length).toBe(1);
@@ -144,11 +181,11 @@ describe('Plugin', () => {
       const orig = {name: 'TestSave', content: {foo: 'bar'}, count: 6};
       const patch = {count: 12};
       return Model.create(orig)
-        .then((doc) => {
+        .then(doc => {
           expect(doc.content).toEqual(orig.content);
           return Model.findOne({_id: doc.id});
         })
-        .then((doc) => {
+        .then(doc => {
           expect(doc.content).toEqual(orig.content);
           expect(documentSpy.mock.calls.length).toBe(1);
           expect(documentSpy.mock.calls[0][0]).toEqual(doc.toObject());
@@ -157,7 +194,7 @@ describe('Plugin', () => {
           doc.set('count', patch.count);
           return doc.save();
         })
-        .then((doc) => {
+        .then(doc => {
           expect(fieldSpy.mock.calls.length).toBe(0);
           expect(documentUpdatedSpy.mock.calls.length).toBe(0);
         });
@@ -175,16 +212,16 @@ describe('Plugin', () => {
       const patch = {count: 6};
       return Model.findOne()
         .exec()
-        .then((doc) => {
+        .then(doc => {
           query._id = doc._id;
           return Model.update(query, patch);
         })
-        .then((res) => {
+        .then(res => {
           expect(res.ok).toEqual(1);
           expect(res.n).toEqual(1);
           return Model.findById(query._id);
         })
-        .then((doc) => {
+        .then(doc => {
           expect(doc.count).toEqual(patch.count);
           expect(documentSpy.mock.calls.length).toBe(0);
           expect(schemaSpy.mock.calls.length).toBe(0);
@@ -201,7 +238,7 @@ describe('Plugin', () => {
     // Actually remove document
     return Model.findOne({name: 'TestSave'})
       .then(doc => doc.remove())
-      .then((doc) => {
+      .then(doc => {
         expect(!!doc).toBeTruthy();
         expect(documentSpy.mock.calls.length).toBe(1);
         expect(documentSpy.mock.calls[0][0]).toEqual(doc.toObject());

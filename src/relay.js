@@ -27,9 +27,10 @@ export default function relayMongoEvents({
       client.punsubscribe(channel);
     }
   };
-  const isRelayedEvent = eventName => events.some(
-    relayedEvent => (relayedEvent instanceof RegExp ? relayedEvent.test(eventName) : relayedEvent === eventName)
-  );
+  const isRelayedEvent = eventName =>
+    events.some(
+      relayedEvent => (relayedEvent instanceof RegExp ? relayedEvent.test(eventName) : relayedEvent === eventName)
+    );
   // Once the client enters the subscribed state it is not supposed to issue any other commands,
   // except for additional SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE and PUNSUBSCRIBE commands.
   const subRedisClient = redisClient.duplicate();
@@ -49,7 +50,7 @@ export default function relayMongoEvents({
     }
   });
 
-  schemas.forEach((schemaName) => {
+  schemas.forEach(schemaName => {
     const Model = mongoClient.model(ucfirst(schemaName));
     const parentEmit = Model.emit.bind(Model);
     Model.emit = (eventName, payload = {}) => {

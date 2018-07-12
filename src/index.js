@@ -1,4 +1,6 @@
-import {get, initial, isObject, without, pick, isFunction, uniq} from 'lodash';
+import {
+  get, initial, isObject, without, pick, isFunction, uniq
+} from 'lodash';
 import relayMongoEvents from './relay';
 
 export {relayMongoEvents};

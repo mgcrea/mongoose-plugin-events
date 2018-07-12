@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 import Promise from 'bluebird';
 import publishDebugGlobals from 'debug-utils';
 
-import testSchema from './../fixtures/schema';
-import pkg from './../../package.json';
+import testSchema from '../fixtures/schema';
+import pkg from '../../package.json';
 
-import eventsPlugin from './../../src';
+import eventsPlugin from '../../src';
 
 mongoose.Promise = Promise;
 publishDebugGlobals();
@@ -107,7 +107,7 @@ describe('Plugin', () => {
       .exec()
       .then((doc) => {
         query._id = doc._id;
-        return Model.update(query, patch);
+        return Model.update(query, {$set: patch});
       })
       .then((doc) => {
         expect(doc.ok).toEqual(1);

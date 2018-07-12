@@ -1,5 +1,5 @@
 import {Schema} from 'mongoose';
-import eventsPlugin from './../../src';
+import eventsPlugin from '../../src';
 
 const schema = new Schema({
   name: {type: String, required: true},

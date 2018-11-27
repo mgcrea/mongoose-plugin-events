@@ -1,4 +1,4 @@
-import EJSON from 'mongodb-extended-json';
+import EJSON from 'mongodb-extjson';
 import {pull} from 'lodash';
 
 const ucfirst = str => str.charAt(0).toUpperCase() + str.substr(1);

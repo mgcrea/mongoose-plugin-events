@@ -22,8 +22,8 @@
   "repository": "github:mgcrea/mongoose-plugin-events",
   "license": "MIT",
   "dependencies": {
-    "lodash": "^4.17.10",
-    "mongodb-extended-json": "^1.10.0"
+    "lodash": "^4.17.11",
+    "mongodb-extjson": "^3.0.3"
   },
   "peerDependencies": {
     "mongoose": ">= 4"
@@ -31,22 +31,22 @@
   "optionalDependencies": {},
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.2.5",
+    "babel-eslint": "^10.0.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-function-bind": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
-    "codacy-coverage": "^3.0.0",
-    "debug-utils": "^0.3.2",
-    "eslint": "^5.1.0",
-    "eslint-config-airbnb-base": "^13.0.0",
-    "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-import": "^2.13.0",
-    "expect": "^23.4.0",
-    "jest": "^23.4.0",
-    "mongoose": "^5.2.3",
-    "prettier": "^1.13.7",
+    "codacy-coverage": "^3.3.0",
+    "debug-utils": "^0.4.3",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-import": "^2.14.0",
+    "expect": "^23.6.0",
+    "jest": "^23.6.0",
+    "mongoose": "^5.3.14",
+    "prettier": "^1.15.2",
     "redis": "^2.8.0",
     "rimraf": "^2.6.2"
   },

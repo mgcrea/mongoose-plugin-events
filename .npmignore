@@ -3,4 +3,5 @@ node_modules/
 *.log
 .tmp/
 .nyc_output/
+.history/
 coverage/

@@ -3,7 +3,7 @@ import {pull} from 'lodash';
 
 const ucfirst = str => str.charAt(0).toUpperCase() + str.substr(1);
 
-const RELAYED_EVENTS = ['created', /updated:?.*/, 'deleted'];
+const RELAYED_EVENTS = ['created', /updated:?.*/, 'removed'];
 
 // @TODO
 // test publish on one model do not impact other model!

@@ -137,11 +137,16 @@ export default function eventsPlugin(schema, {ignoredPaths = ['updatedAt', 'crea
   schema.post('update', postUpdate);
   schema.post('findOneAndUpdate', postUpdate);
 
-  schema.post('remove', function postRemove() {
+  schema.post('remove', {query: true}, function postRemove() {
     const doc = this;
-    const model = doc.model(doc.constructor.modelName);
-    const object = doc.toObject();
-    model.$emit('removed', object);
+    // Check if it's a single doc or multi docs which have been removed
+    if (doc.toObject) {
+      const model = doc.model(doc.constructor.modelName);
+      model.$emit('removed', {query: doc.toObject()});
+    } else {
+      const query = doc.getQuery();
+      doc.model.$emit('removed', {query});
+    }
   });
 
   // Prepare potential relays

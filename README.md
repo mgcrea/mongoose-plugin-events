@@ -10,6 +10,11 @@
 
 React on database changes with document and models events
 
+## Note
+
+- **v2.x** for `mongoose@^5`
+- **v1.x** for `mongoose@^4`
+
 ## Quickstart
 
 - Load the plugin inside your schema
